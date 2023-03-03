@@ -10,15 +10,14 @@ type res106 = upperCaseA<'a' | 'b' | 'c'>
 /* 判断联合类型 */
 /* 只有？左边的类型变量会触发分布式 */
 /* 并且[T] [P]的写法并不会触发分布式 */
-type isUnion<T, P = T> = 
+type isUnion2<T, P = T> = 
   T extends T 
   ? [P] extends [T]
     ? false
     : true
   : never
-type res107 = isUnion<1 | 2>
-type res108 = isUnion<1>
-
+type res107 = isUnion2<1 | 2>
+type res108 = isUnion2<1>
 type TestUnion<A, B = A> = A  extends A ? { a: A, b: B} : never;
 type res109 = TestUnion<'a' | 'b'>
 
