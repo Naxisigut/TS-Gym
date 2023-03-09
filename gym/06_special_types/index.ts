@@ -61,21 +61,12 @@ type res132 = isUnion<1|2>
 type res133 = [1] extends [1, 2] ? true : false
 type res134 = [1] extends [1 | 2] ? true : false
 
-/* 联合转交叉 */
-// 分步完成
-type first<T> = T extends T ? (x: T)=>unknown : never
-type second<T> = T extends (x: infer R)=>unknown ? R : never
-type firstRes = first<{name: string} | {age: number}>
-type secondRes = second<firstRes>
-
-type res = (x: string | number)=>unknown 
-
-// 一次性完成
+// /* 联合转交叉 */
 type UnionToIntersection<U> = 
     (U extends U ? (x: U) => unknown : never) extends (x: infer R) => unknown
         ? R
         : never
-type oneStepRes = UnionToIntersection<{name: string} | {age: number}>
+type res145 = UnionToIntersection<{name: string} | {age: number}>
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------Never-------------------------------- */
@@ -123,7 +114,107 @@ type res144 = isTuple2<2>
 /* ----------------------------------------------------------------------- */
 /* ----------------------------------------------------------------------- */
 /* 可选索引的特性：
-1. 
+1. 可选索引的值的类型为undefined和值类型的union
+2. 可选索引的意思是这个索引不一定存在，而不是其值类型可能是undefined
 */
 /* 提取索引类型中的可选属性 */
+type getOptional<T extends Object> = {
+  [key in keyof T as undefined extends T[key] ? key : never] : T[key]
+} // 错误做法
+type getOptional2<T extends Object> = {
+  [key in keyof T as {} extends Pick<T, key> ? key : never] : T[key]
+}
+// Pick 内置高级类型，提取索引类型的某些key，构成新的索引类型
+type res146 = Pick<{name: string, age: number, gender: string}, 'name' | 'age'>
+type res147 = getOptional<{
+  name: undefined,
+  age?: number,
+  gender?: string
+}>
+type res148 = getOptional2<{
+  name: undefined,
+  age?: number,
+  gender?: string
+}>
+
+/* 提取索引类型中的非可选属性 */
+type getRequired<T extends object> = {
+  [key in keyof T as Pick<T, key> extends Record<key, T[key]> ? key : never ] : T[key]
+}
+type getRequired2<T extends object> = {
+  [key in keyof T as {} extends Pick<T, key> ? never : key ] : T[key]
+}
+type res149 = getRequired<{
+  name: undefined,
+  age?: number,
+  gender?: string
+}>
+type res150 = getRequired2<{
+  name: undefined,
+  age?: number,
+  gender?: string
+}>
+ 
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* --------------------------------可索引签名------------------------------ */
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* 索引签名的特性：
+1. 索引签名不能构造成字符串字面量类型，因为它没有名字，而其他索引可以
+*/
+/* 去除索引类型中的可索引签名 */
+type removeIndexSign<T extends object> = {
+  [key in keyof T as key extends `${infer str}` ? str : never] : T[key]
+}
+type res151 = removeIndexSign<{
+  [key: string]: any,
+  name: string,
+  age: number 
+}>
+
+
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* -------------------------------class的public--------------------------- */
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* public属性的特性：
+1. keyof 只能拿到 class 的 public 索引，private 和 protected 的索引会被忽略
+*/
+/* 获取class的公共属性 */
+class Dong {
+  public name: string;
+  protected age: number;
+  private hobbies: string[];
+
+  constructor() {
+    this.name = 'dong';
+    this.age = 20;
+    this.hobbies = ['sleep', 'eat'];
+  }
+}
+type getPublic<T extends object> = {
+  [key in keyof T] : T[key]
+}
+type res152 = getPublic<Dong>
+
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* ---------------------------------as const------------------------------ */
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* as const的特性：
+1. 对于索引类型等，在创建变量时默认不会被推导为字面量类型。此时声明为as const，该变量会被推导为字面量类型，且各属性均为readonly
+2. 对于readonly的属性，在模式匹配时要加上readonly，才会被匹配到
+*/
+/* as const */
+const var001 = {
+  name: 111
+}
+const var002 = {
+  name: 111
+} as const 
+type res153 = typeof var001
+type res154 = typeof var002
 
