@@ -61,7 +61,7 @@ type res132 = isUnion<1|2>
 type res133 = [1] extends [1, 2] ? true : false
 type res134 = [1] extends [1 | 2] ? true : false
 
-// /* 联合转交叉 */
+/* 联合转交叉 */
 type UnionToIntersection<U> = 
     (U extends U ? (x: U) => unknown : never) extends (x: infer R) => unknown
         ? R
