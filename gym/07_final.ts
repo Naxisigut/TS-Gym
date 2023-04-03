@@ -1,4 +1,10 @@
-/* 从query字符串中提取query参数 */
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* ------------------------从query字符串中提取query参数-------------------- */
+/* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+
+/* 将单个请求字符串中分解为一个对象类型 */
 type parseSingle<T extends string> = T extends `${infer param}=${infer value}` ? {
   [ K in param]: value 
 } : {}
@@ -7,10 +13,12 @@ type splitToArr<T extends string, splitter extends string> =
   T extends `${infer first}${splitter}${infer rest}`
   ? [first, ...splitToArr<rest, splitter>] : [T]
 
+/* 分解一长串请求字符串 */
 type parseQuery<T extends string, splitter extends string> = 
   T extends `${infer first}${splitter}${infer rest}`
   ? mergeObj<parseSingle<first>, parseQuery<rest, splitter>> : parseSingle<T>
 
+/* 合并两个对象类型 */
 type mergeObj<T extends Object, P extends Object> = {
   [K in keyof T | keyof P]: 
     K extends keyof T ? 
@@ -23,9 +31,7 @@ type mergeObj<T extends Object, P extends Object> = {
 type res155 = parseQuery<'a=5&b=6&c=7&d=8&d=9', '&'>
 
 
-
-
-/* answer */
+/* author answer */
 type ParseQueryString<Str extends string> =
   Str extends `${infer Param}&${infer Rest}`
   ? MergeParams<ParseParam<Param>, ParseQueryString<Rest>>
@@ -50,7 +56,6 @@ type MergeParams<
     ? OtherParam[Key]
     : never
   }
-
 
 type MergeValues<One, Other> =
   One extends Other
